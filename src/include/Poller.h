@@ -10,7 +10,7 @@
  */
 #pragma once
 
-#define OS_MACOS
+#define OS_LINUX
 
 #ifdef OS_LINUX
 #include <sys/epoll.h>
