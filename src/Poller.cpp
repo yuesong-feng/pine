@@ -17,7 +17,6 @@
 #include "Channel.h"
 #include "util.h"
 
-
 #ifdef OS_LINUX
 
 #define MAX_EVENTS 1000
@@ -54,15 +53,15 @@ void Poller::UpdateChannel(Channel *ch) {
   if (ch->GetListenEvents() & ch->kReadEvent) {
     ev.events |= EPOLLIN | EPOLLPRI;
   }
-  if(ch->GetListenEvents() & ch->kWriteEvent{
+  if (ch->GetListenEvents() & ch->kWriteEvent) {
     ev.events |= EPOLLOUT;
   }
-  if(ch->GetListenEvents() & ch->kET){
+  if (ch->GetListenEvents() & ch->kET) {
     ev.events |= EPOLLET;
   }
-  if (!ch->GetInEpoll()) {
+  if (!ch->GetExist()) {
     ErrorIf(epoll_ctl(fd_, EPOLL_CTL_ADD, fd, &ev) == -1, "epoll add error");
-    ch->SetInEpoll();
+    ch->SetExist();
   } else {
     ErrorIf(epoll_ctl(fd_, EPOLL_CTL_MOD, fd, &ev) == -1, "epoll modify error");
   }
@@ -88,15 +87,9 @@ Poller::~Poller() {
   }
 }
 
-std::vector<Channel *> Poller::Poll(int timeout) {
+std::vector<Channel *> Poller::Poll(int timeout) {}
 
-}
+void Poller::UpdateChannel(Channel *ch) {}
 
-void Poller::UpdateChannel(Channel *ch) {
-
-}
-
-void Poller::DeleteChannel(Channel *ch) {
-  
-}
+void Poller::DeleteChannel(Channel *ch) {}
 #endif
