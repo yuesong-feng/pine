@@ -40,7 +40,16 @@ std::vector<Channel *> Poller::Poll(int timeout) {
   ErrorIf(nfds == -1, "epoll wait error");
   for (int i = 0; i < nfds; ++i) {
     Channel *ch = (Channel *)events_[i].data.ptr;
-    ch->SetReadyEvents(events_[i].events);
+    int events = events_[i].events;
+    if (events & EPOLLIN) {
+      ch->SetReadyEvents(ch->kReadEvent);
+    }
+    if (events & EPOLLOUT) {
+      ch->SetReadyEvents(ch->kWriteEvent);
+    }
+    if (events & EPOLLET) {
+      ch->SetReadyEvents(ch->kET);
+    }
     active_channels.push_back(ch);
   }
   return active_channels;
@@ -94,13 +103,13 @@ std::vector<Channel *> Poller::Poll(int timeout) {
   ts.tv_nsec = (timeout % 1000) * 1000 * 1000;
   struct kevent active_events[MAX_EVENTS];
   int n = kevent(fd_, NULL, 0, active_events, MAX_EVENTS, &ts);
-  for(int i = 0; i < n; ++i){
+  for (int i = 0; i < n; ++i) {
     Channel *ch = (Channel *)active_events[i].udata;
     int events = active_events[i].filter;
-    if(events & EVFILT_READ){
+    if (events & EVFILT_READ) {
       ch->SetReadyEvents(ch->kReadEvent | ch->kET);
     }
-    if(events & EVFILT_WRITE){
+    if (events & EVFILT_WRITE) {
       ch->SetReadyEvents(ch->kWriteEvent | ch->kET);
     }
     active_channels.push_back(ch);

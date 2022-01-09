@@ -26,8 +26,8 @@ class Channel {
   void EnableRead();
 
   int GetFd();
-  uint32_t GetListenEvents();
-  uint32_t GetReadyEvents();
+  int GetListenEvents();
+  int GetReadyEvents();
   bool GetExist();
   void SetExist(bool in = true);
   void UseET();
@@ -42,8 +42,8 @@ class Channel {
  private:
   EventLoop *loop_;
   int fd_;
-  uint32_t listen_events_{0};
-  uint32_t ready_events_{0};
+  int listen_events_{0};
+  int ready_events_{0};
   bool exist_{false};
   std::function<void()> read_callback_;
   std::function<void()> write_callback_;

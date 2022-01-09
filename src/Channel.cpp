@@ -50,8 +50,8 @@ void Channel::UseET() {
 }
 int Channel::GetFd() { return fd_; }
 
-uint32_t Channel::GetListenEvents() { return listen_events_; }
-uint32_t Channel::GetReadyEvents() { return ready_events_; }
+int Channel::GetListenEvents() { return listen_events_; }
+int Channel::GetReadyEvents() { return ready_events_; }
 
 bool Channel::GetExist() { return exist_; }
 
