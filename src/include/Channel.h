@@ -32,7 +32,7 @@ class Channel {
   void SetExist(bool in = true);
   void UseET();
 
-  void SetReadyEvents(uint32_t ev);
+  void SetReadyEvents(int ev);
   void SetReadCallback(std::function<void()> const &callback);
 
   static const int kReadEvent;

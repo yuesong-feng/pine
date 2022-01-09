@@ -57,6 +57,16 @@ bool Channel::GetExist() { return exist_; }
 
 void Channel::SetExist(bool in) { exist_ = in; }
 
-void Channel::SetReadyEvents(uint32_t ev) { ready_events_ = ev; }
+void Channel::SetReadyEvents(int ev) {
+  if (ev & kReadEvent) {
+    ready_events_ |= kReadEvent;
+  }
+  if (ev & kWriteEvent) {
+    ready_events_ |= kWriteEvent;
+  }
+  if (ev & kET) {
+    ready_events_ |= kET;
+  }
+}
 
 void Channel::SetReadCallback(std::function<void()> const &callback) { read_callback_ = callback; }
