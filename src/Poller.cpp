@@ -15,6 +15,7 @@
 #include <cstring>
 
 #include "Channel.h"
+#include "Socket.h"
 #include "util.h"
 #define MAX_EVENTS 1000
 
@@ -42,13 +43,13 @@ std::vector<Channel *> Poller::Poll(int timeout) {
     Channel *ch = (Channel *)events_[i].data.ptr;
     int events = events_[i].events;
     if (events & EPOLLIN) {
-      ch->SetReadyEvents(ch->kReadEvent);
+      ch->SetReadyEvents(Channel::READ_EVENT);
     }
     if (events & EPOLLOUT) {
-      ch->SetReadyEvents(ch->kWriteEvent);
+      ch->SetReadyEvents(Channel::WRITE_EVENT);
     }
     if (events & EPOLLET) {
-      ch->SetReadyEvents(ch->kET);
+      ch->SetReadyEvents(Channel::ET);
     }
     active_channels.push_back(ch);
   }
@@ -56,16 +57,16 @@ std::vector<Channel *> Poller::Poll(int timeout) {
 }
 
 void Poller::UpdateChannel(Channel *ch) {
-  int fd = ch->GetFd();
+  int fd = ch->GetSocket()->GetFd();
   struct epoll_event ev {};
   ev.data.ptr = ch;
-  if (ch->GetListenEvents() & ch->kReadEvent) {
+  if (ch->GetListenEvents() & Channel::READ_EVENT) {
     ev.events |= EPOLLIN | EPOLLPRI;
   }
-  if (ch->GetListenEvents() & ch->kWriteEvent) {
+  if (ch->GetListenEvents() & Channel::WRITE_EVENT) {
     ev.events |= EPOLLOUT;
   }
-  if (ch->GetListenEvents() & ch->kET) {
+  if (ch->GetListenEvents() & Channel::ET) {
     ev.events |= EPOLLET;
   }
   if (!ch->GetExist()) {
@@ -77,7 +78,7 @@ void Poller::UpdateChannel(Channel *ch) {
 }
 
 void Poller::DeleteChannel(Channel *ch) {
-  int fd = ch->GetFd();
+  int fd = ch->GetSocket()->GetFd();
   ErrorIf(epoll_ctl(fd_, EPOLL_CTL_DEL, fd, nullptr) == -1, "epoll delete error");
   ch->SetExist(false);
 }
@@ -107,9 +108,9 @@ std::vector<Channel *> Poller::Poll(int timeout) {
     ts.tv_nsec = (timeout % 1000) * 1000 * 1000;
   }
   int nfds = 0;
-  if(timeout == -1){
+  if (timeout == -1) {
     nfds = kevent(fd_, NULL, 0, events_, MAX_EVENTS, NULL);
-  } else{
+  } else {
     nfds = kevent(fd_, NULL, 0, events_, MAX_EVENTS, &ts);
   }
   for (int i = 0; i < nfds; ++i) {

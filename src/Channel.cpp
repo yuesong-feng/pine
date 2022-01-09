@@ -17,43 +17,38 @@
 #include "EventLoop.h"
 #include "Socket.h"
 
-const int Channel::kReadEvent = 1;
-const int Channel::kWriteEvent = 2;
-const int Channel::kET = 4;
+const int Channel::READ_EVENT = 1;
+const int Channel::WRITE_EVENT = 2;
+const int Channel::ET = 4;
 
-Channel::Channel(EventLoop *loop, int fd) : loop_(loop), fd_(fd) {}
+Channel::Channel(EventLoop *loop, Socket *socket) : loop_(loop), socket_(socket) {}
 
-Channel::~Channel() {
-  loop_->DeleteChannel(this);
-  if (fd_ != -1) {
-    close(fd_);
-  }
-}
+Channel::~Channel() { loop_->DeleteChannel(this); }
 
 void Channel::HandleEvent() {
-  if (ready_events_ & kReadEvent) {
+  if (ready_events_ & READ_EVENT) {
     read_callback_();
   }
-  if (ready_events_ & kWriteEvent) {
+  if (ready_events_ & WRITE_EVENT) {
     write_callback_();
   }
 }
 
 void Channel::EnableRead() {
-  listen_events_ |= kReadEvent;
+  listen_events_ |= READ_EVENT;
   loop_->UpdateChannel(this);
 }
 
 void Channel::EnableWrite() {
-  listen_events_ |= kWriteEvent;
+  listen_events_ |= WRITE_EVENT;
   loop_->UpdateChannel(this);
 }
 
 void Channel::UseET() {
-  listen_events_ |= kET;
+  listen_events_ |= ET;
   loop_->UpdateChannel(this);
 }
-int Channel::GetFd() { return fd_; }
+Socket *Channel::GetSocket() { return socket_; }
 
 int Channel::GetListenEvents() { return listen_events_; }
 int Channel::GetReadyEvents() { return ready_events_; }
@@ -63,14 +58,14 @@ bool Channel::GetExist() { return exist_; }
 void Channel::SetExist(bool in) { exist_ = in; }
 
 void Channel::SetReadyEvents(int ev) {
-  if (ev & kReadEvent) {
-    ready_events_ |= kReadEvent;
+  if (ev & READ_EVENT) {
+    ready_events_ |= READ_EVENT;
   }
-  if (ev & kWriteEvent) {
-    ready_events_ |= kWriteEvent;
+  if (ev & WRITE_EVENT) {
+    ready_events_ |= WRITE_EVENT;
   }
-  if (ev & kET) {
-    ready_events_ |= kET;
+  if (ev & ET) {
+    ready_events_ |= ET;
   }
 }
 

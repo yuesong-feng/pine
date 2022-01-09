@@ -17,7 +17,7 @@ class Socket;
 class EventLoop;
 class Channel {
  public:
-  Channel(EventLoop *loop, int fd);
+  Channel(EventLoop *loop, Socket *socket);
   ~Channel();
 
   DISALLOW_COPY_AND_MOVE(Channel);
@@ -26,7 +26,7 @@ class Channel {
   void EnableRead();
   void EnableWrite();
 
-  int GetFd();
+  Socket *GetSocket();
   int GetListenEvents();
   int GetReadyEvents();
   bool GetExist();
@@ -37,13 +37,13 @@ class Channel {
   void SetReadCallback(std::function<void()> const &callback);
   void SetWriteCallback(std::function<void()> const &callback);
 
-  static const int kReadEvent;   // NOLINT
-  static const int kWriteEvent;  // NOLINT
-  static const int kET;          // NOLINT
+  static const int READ_EVENT;   // NOLINT
+  static const int WRITE_EVENT;  // NOLINT
+  static const int ET;           // NOLINT
 
  private:
   EventLoop *loop_;
-  int fd_;
+  Socket *socket_;
   int listen_events_{0};
   int ready_events_{0};
   bool exist_{false};
