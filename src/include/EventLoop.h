@@ -24,6 +24,7 @@ class EventLoop {
 
   void Loop();
   void UpdateChannel(Channel *ch);
+  void DeleteChannel(Channel *ch);
 
  private:
   Poller *poller_{nullptr};

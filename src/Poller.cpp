@@ -88,6 +88,8 @@ void Poller::DeleteChannel(Channel *ch) {
 Poller::Poller() {
   fd_ = kqueue();
   ErrorIf(fd_ == -1, "kqueue create error");
+  events_ = new struct kevent[MAX_EVENTS];
+  memset(events_, 0, sizeof(*events_) * MAX_EVENTS);
 }
 
 Poller::~Poller() {
@@ -104,16 +106,15 @@ std::vector<Channel *> Poller::Poll(int timeout) {
     ts.tv_sec = timeout / 1000;
     ts.tv_nsec = (timeout % 1000) * 1000 * 1000;
   }
-  struct kevent active_events[MAX_EVENTS];
   int nfds = 0;
   if(timeout == -1){
-    nfds = kevent(fd_, NULL, 0, active_events, MAX_EVENTS, NULL);
+    nfds = kevent(fd_, NULL, 0, events_, MAX_EVENTS, NULL);
   } else{
-    nfds = kevent(fd_, NULL, 0, active_events, MAX_EVENTS, &ts);
+    nfds = kevent(fd_, NULL, 0, events_, MAX_EVENTS, &ts);
   }
   for (int i = 0; i < nfds; ++i) {
-    Channel *ch = (Channel *)active_events[i].udata;
-    int events = active_events[i].filter;
+    Channel *ch = (Channel *)events_[i].udata;
+    int events = events_[i].filter;
     if (events == EVFILT_READ) {
       ch->SetReadyEvents(ch->kReadEvent | ch->kET);
     }

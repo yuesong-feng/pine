@@ -24,9 +24,9 @@ const int Channel::kET = 4;
 Channel::Channel(EventLoop *loop, int fd) : loop_(loop), fd_(fd) {}
 
 Channel::~Channel() {
+  loop_->DeleteChannel(this);
   if (fd_ != -1) {
     close(fd_);
-    fd_ = -1;
   }
 }
 
@@ -41,6 +41,11 @@ void Channel::HandleEvent() {
 
 void Channel::EnableRead() {
   listen_events_ |= kReadEvent;
+  loop_->UpdateChannel(this);
+}
+
+void Channel::EnableWrite() {
+  listen_events_ |= kWriteEvent;
   loop_->UpdateChannel(this);
 }
 
@@ -70,3 +75,4 @@ void Channel::SetReadyEvents(int ev) {
 }
 
 void Channel::SetReadCallback(std::function<void()> const &callback) { read_callback_ = callback; }
+void Channel::SetWriteCallback(std::function<void()> const &callback) { write_callback_ = callback; }

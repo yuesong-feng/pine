@@ -10,7 +10,7 @@
  */
 #pragma once
 
-#define OS_LINUX
+#define OS_MACOS
 
 #ifdef OS_LINUX
 #include <sys/epoll.h>
@@ -41,5 +41,8 @@ class Poller {
   int fd_{1};
 #ifdef OS_LINUX
   struct epoll_event *events_{nullptr};
+#endif
+#ifdef OS_MACOS
+  struct kevent *events_{nullptr};
 #endif
 };

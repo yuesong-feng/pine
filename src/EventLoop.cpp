@@ -30,3 +30,4 @@ void EventLoop::Loop() {
 }
 
 void EventLoop::UpdateChannel(Channel *ch) { poller_->UpdateChannel(ch); }
+void EventLoop::DeleteChannel(Channel *ch) { poller_->DeleteChannel(ch); }

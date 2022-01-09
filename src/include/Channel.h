@@ -24,6 +24,7 @@ class Channel {
 
   void HandleEvent();
   void EnableRead();
+  void EnableWrite();
 
   int GetFd();
   int GetListenEvents();
@@ -34,10 +35,11 @@ class Channel {
 
   void SetReadyEvents(int ev);
   void SetReadCallback(std::function<void()> const &callback);
+  void SetWriteCallback(std::function<void()> const &callback);
 
-  static const int kReadEvent;
-  static const int kWriteEvent;
-  static const int kET;
+  static const int kReadEvent;   // NOLINT
+  static const int kWriteEvent;  // NOLINT
+  static const int kET;          // NOLINT
 
  private:
   EventLoop *loop_;
