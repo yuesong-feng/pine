@@ -1,6 +1,8 @@
 # pine
 A high-performance and easy-to-use C++ network library. 
 
+Now this is just a toy library for education purpose, do not use in production.
+
 ## example
 An echo server:
 ```cpp
