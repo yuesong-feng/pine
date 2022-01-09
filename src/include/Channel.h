@@ -28,19 +28,23 @@ class Channel {
   int GetFd();
   uint32_t GetListenEvents();
   uint32_t GetReadyEvents();
-  bool GetInEpoll();
-  void SetInEpoll(bool in = true);
+  bool GetExist();
+  void SetExist(bool in = true);
   void UseET();
 
   void SetReadyEvents(uint32_t ev);
   void SetReadCallback(std::function<void()> const &callback);
 
+  static const int kReadEvent;
+  static const int kWriteEvent;
+  static const int kET;
+
  private:
   EventLoop *loop_;
   int fd_;
-  uint32_t listen_events_;
-  uint32_t ready_events_;
-  bool in_epoll_;
+  uint32_t listen_events_{0};
+  uint32_t ready_events_{0};
+  bool exist_{false};
   std::function<void()> read_callback_;
   std::function<void()> write_callback_;
 };

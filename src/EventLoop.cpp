@@ -13,20 +13,20 @@
 #include <vector>
 
 #include "Channel.h"
-#include "Epoll.h"
+#include "Poller.h"
 
-EventLoop::EventLoop() { epoll_ = new Epoll(); }
+EventLoop::EventLoop() { poller_ = new Poller(); }
 
-EventLoop::~EventLoop() { delete epoll_; }
+EventLoop::~EventLoop() { delete poller_; }
 
 void EventLoop::Loop() {
   while (!quit_) {
     std::vector<Channel *> chs;
-    chs = epoll_->Poll();
+    chs = poller_->Poll();
     for (auto &ch : chs) {
       ch->HandleEvent();
     }
   }
 }
 
-void EventLoop::UpdateChannel(Channel *ch) { epoll_->UpdateChannel(ch); }
+void EventLoop::UpdateChannel(Channel *ch) { poller_->UpdateChannel(ch); }

@@ -10,7 +10,6 @@
  */
 #include "Channel.h"
 
-#include <sys/epoll.h>
 #include <unistd.h>
 
 #include <utility>
@@ -18,8 +17,12 @@
 #include "EventLoop.h"
 #include "Socket.h"
 
+const int Channel::kReadEvent = 1;
+const int Channel::kWriteEvent = 2;
+const int Channel::kET = 4;
+
 Channel::Channel(EventLoop *loop, int fd)
-    : loop_(loop), fd_(fd), listen_events_(0), ready_events_(0), in_epoll_(false) {}
+    : loop_(loop), fd_(fd) {}
 
 Channel::~Channel() {
   if (fd_ != -1) {
@@ -29,21 +32,21 @@ Channel::~Channel() {
 }
 
 void Channel::HandleEvent() {
-  if (ready_events_ & (EPOLLIN | EPOLLPRI)) {
+  if (ready_events_ & kReadEvent) {
     read_callback_();
   }
-  if (ready_events_ & (EPOLLOUT)) {
+  if (ready_events_ & kWriteEvent) {
     write_callback_();
   }
 }
 
 void Channel::EnableRead() {
-  listen_events_ |= EPOLLIN | EPOLLPRI;
+  listen_events_ |= kReadEvent;
   loop_->UpdateChannel(this);
 }
 
 void Channel::UseET() {
-  listen_events_ |= EPOLLET;
+  listen_events_ |= kET;
   loop_->UpdateChannel(this);
 }
 int Channel::GetFd() { return fd_; }
@@ -51,9 +54,9 @@ int Channel::GetFd() { return fd_; }
 uint32_t Channel::GetListenEvents() { return listen_events_; }
 uint32_t Channel::GetReadyEvents() { return ready_events_; }
 
-bool Channel::GetInEpoll() { return in_epoll_; }
+bool Channel::GetExist() { return exist_; }
 
-void Channel::SetInEpoll(bool in) { in_epoll_ = in; }
+void Channel::SetExist(bool in) { exist_ = in; }
 
 void Channel::SetReadyEvents(uint32_t ev) { ready_events_ = ev; }
 

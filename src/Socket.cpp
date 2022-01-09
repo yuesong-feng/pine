@@ -29,7 +29,6 @@ Socket::Socket(int fd) : fd_(fd) { ErrorIf(fd_ == -1, "socket create error"); }
 Socket::~Socket() {
   if (fd_ != -1) {
     close(fd_);
-    fd_ = -1;
   }
 }
 
@@ -38,9 +37,12 @@ void Socket::Bind(InetAddress *addr) {
   ErrorIf(bind(fd_, (sockaddr *)&tmp_addr, sizeof(tmp_addr)) == -1, "socket bind error");
 }
 
-void Socket::Listen() { ErrorIf(::listen(fd_, SOMAXCONN) == -1, "socket listen error"); }
+void Socket::Listen() { ErrorIf(listen(fd_, SOMAXCONN) == -1, "socket listen error"); }
+
 void Socket::SetNonBlocking() { fcntl(fd_, F_SETFL, fcntl(fd_, F_GETFL) | O_NONBLOCK); }
+
 bool Socket::IsNonBlocking() { return (fcntl(fd_, F_GETFL) & O_NONBLOCK) != 0; }
+
 int Socket::Accept(InetAddress *addr) {
   // for server socket
   int clnt_sockfd = -1;
@@ -50,7 +52,6 @@ int Socket::Accept(InetAddress *addr) {
     while (true) {
       clnt_sockfd = accept(fd_, (sockaddr *)&tmp_addr, &addr_len);
       if (clnt_sockfd == -1 && ((errno == EAGAIN) || (errno == EWOULDBLOCK))) {
-        // printf("no connection yet\n");
         continue;
       }
       if (clnt_sockfd == -1) {
