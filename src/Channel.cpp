@@ -21,8 +21,7 @@ const int Channel::kReadEvent = 1;
 const int Channel::kWriteEvent = 2;
 const int Channel::kET = 4;
 
-Channel::Channel(EventLoop *loop, int fd)
-    : loop_(loop), fd_(fd) {}
+Channel::Channel(EventLoop *loop, int fd) : loop_(loop), fd_(fd) {}
 
 Channel::~Channel() {
   if (fd_ != -1) {

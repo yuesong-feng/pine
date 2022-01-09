@@ -70,7 +70,7 @@ void Poller::UpdateChannel(Channel *ch) {
 void Poller::DeleteChannel(Channel *ch) {
   int fd = ch->GetFd();
   ErrorIf(epoll_ctl(fd_, EPOLL_CTL_DEL, fd, nullptr) == -1, "epoll delete error");
-  ch->SetInEpoll(false);
+  ch->SetExist(false);
 }
 #endif
 

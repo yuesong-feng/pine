@@ -39,7 +39,7 @@ class Poller {
 
  private:
   int fd_{1};
-  #ifdef OS_LINUX
+#ifdef OS_LINUX
   struct epoll_event *events_{nullptr};
-  #endif
+#endif
 };
