@@ -99,17 +99,25 @@ Poller::~Poller() {
 std::vector<Channel *> Poller::Poll(int timeout) {
   std::vector<Channel *> active_channels;
   struct timespec ts;
-  ts.tv_sec = timeout / 1000;
-  ts.tv_nsec = (timeout % 1000) * 1000 * 1000;
+  memset(&ts, 0, sizeof(ts));
+  if (timeout != -1) {
+    ts.tv_sec = timeout / 1000;
+    ts.tv_nsec = (timeout % 1000) * 1000 * 1000;
+  }
   struct kevent active_events[MAX_EVENTS];
-  int n = kevent(fd_, NULL, 0, active_events, MAX_EVENTS, &ts);
-  for (int i = 0; i < n; ++i) {
+  int nfds = 0;
+  if(timeout == -1){
+    nfds = kevent(fd_, NULL, 0, active_events, MAX_EVENTS, NULL);
+  } else{
+    nfds = kevent(fd_, NULL, 0, active_events, MAX_EVENTS, &ts);
+  }
+  for (int i = 0; i < nfds; ++i) {
     Channel *ch = (Channel *)active_events[i].udata;
     int events = active_events[i].filter;
-    if (events & EVFILT_READ) {
+    if (events == EVFILT_READ) {
       ch->SetReadyEvents(ch->kReadEvent | ch->kET);
     }
-    if (events & EVFILT_WRITE) {
+    if (events == EVFILT_WRITE) {
       ch->SetReadyEvents(ch->kWriteEvent | ch->kET);
     }
     active_channels.push_back(ch);
@@ -122,10 +130,10 @@ void Poller::UpdateChannel(Channel *ch) {
   int n = 0;
   int fd = ch->GetFd();
   if (ch->GetListenEvents() & ch->kReadEvent) {
-    EV_SET(&ev[n++], fd, EVFILT_READ, EV_ADD | EV_ENABLE | EV_CLEAR, 0, 0, (void *)ch);
+    EV_SET(&ev[n++], fd, EVFILT_READ, EV_ADD | EV_CLEAR, 0, 0, ch);
   }
   if (ch->GetListenEvents() & ch->kWriteEvent) {
-    EV_SET(&ev[n++], fd, EVFILT_WRITE, EV_ADD | EV_ENABLE | EV_CLEAR, 0, 0, (void *)ch);
+    EV_SET(&ev[n++], fd, EVFILT_WRITE, EV_ADD | EV_CLEAR, 0, 0, ch);
   }
   int r = kevent(fd_, ev, n, NULL, 0, NULL);
   ErrorIf(r == -1, "kqueue add event error");
@@ -136,10 +144,10 @@ void Poller::DeleteChannel(Channel *ch) {
   int n = 0;
   int fd = ch->GetFd();
   if (ch->GetListenEvents() & ch->kReadEvent) {
-    EV_SET(&ev[n++], fd, EVFILT_READ, EV_DELETE, 0, 0, (void *)ch);
+    EV_SET(&ev[n++], fd, EVFILT_READ, EV_DELETE, 0, 0, ch);
   }
   if (ch->GetListenEvents() & ch->kWriteEvent) {
-    EV_SET(&ev[n++], fd, EVFILT_WRITE, EV_DELETE, 0, 0, (void *)ch);
+    EV_SET(&ev[n++], fd, EVFILT_WRITE, EV_DELETE, 0, 0, ch);
   }
   int r = kevent(fd_, ev, n, NULL, 0, NULL);
   ErrorIf(r == -1, "kqueue delete event error");
