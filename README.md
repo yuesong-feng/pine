@@ -23,6 +23,26 @@ int main() {
   return 0;
 }
 ```
+An echo client:
+```cpp
+int main() {
+  Socket *sock = new Socket();
+  sock->Connect("127.0.0.1", 1234);
+  Connection *conn = new Connection(nullptr, sock);
+  while (true) {
+    conn->GetlineSendBuffer();
+    conn->Write();
+    if (conn->GetState() == Connection::State::Closed) {
+      conn->Close();
+      break;
+    }
+    conn->Read();
+    std::cout << "Message from server: " << conn->ReadBuffer() << std::endl;
+  }
+  delete conn;
+  return 0;
+}
+```
 
 
 
@@ -31,7 +51,7 @@ int main() {
 mkdir build && cd build
 cmake ..
 make format      # optional
-make cpplin      # optional
+make cpplint      # optional
 make clang-tidy  # optional
 make
 # write your program in "test/" directory, eg. server.cpp
