@@ -117,10 +117,10 @@ std::vector<Channel *> Poller::Poll(int timeout) {
     Channel *ch = (Channel *)events_[i].udata;
     int events = events_[i].filter;
     if (events == EVFILT_READ) {
-      ch->SetReadyEvents(ch->kReadEvent | ch->kET);
+      ch->SetReadyEvents(ch->READ_EVENT | ch->ET);
     }
     if (events == EVFILT_WRITE) {
-      ch->SetReadyEvents(ch->kWriteEvent | ch->kET);
+      ch->SetReadyEvents(ch->WRITE_EVENT | ch->ET);
     }
     active_channels.push_back(ch);
   }
@@ -129,13 +129,18 @@ std::vector<Channel *> Poller::Poll(int timeout) {
 
 void Poller::UpdateChannel(Channel *ch) {
   struct kevent ev[2];
+  memset(ev, 0, sizeof(*ev) * 2);
   int n = 0;
-  int fd = ch->GetFd();
-  if (ch->GetListenEvents() & ch->kReadEvent) {
-    EV_SET(&ev[n++], fd, EVFILT_READ, EV_ADD | EV_CLEAR, 0, 0, ch);
+  int fd = ch->GetSocket()->GetFd();
+  int op = EV_ADD;
+  if(ch->GetListenEvents() & ch->ET){
+      op |= EV_CLEAR;
   }
-  if (ch->GetListenEvents() & ch->kWriteEvent) {
-    EV_SET(&ev[n++], fd, EVFILT_WRITE, EV_ADD | EV_CLEAR, 0, 0, ch);
+  if (ch->GetListenEvents() & ch->READ_EVENT) {
+    EV_SET(&ev[n++], fd, EVFILT_READ, op, 0, 0, ch);
+  }
+  if (ch->GetListenEvents() & ch->WRITE_EVENT) {
+    EV_SET(&ev[n++], fd, EVFILT_WRITE, op, 0, 0, ch);
   }
   int r = kevent(fd_, ev, n, NULL, 0, NULL);
   ErrorIf(r == -1, "kqueue add event error");
@@ -144,11 +149,11 @@ void Poller::UpdateChannel(Channel *ch) {
 void Poller::DeleteChannel(Channel *ch) {
   struct kevent ev[2];
   int n = 0;
-  int fd = ch->GetFd();
-  if (ch->GetListenEvents() & ch->kReadEvent) {
+  int fd = ch->GetSocket()->GetFd();
+  if (ch->GetListenEvents() & ch->READ_EVENT) {
     EV_SET(&ev[n++], fd, EVFILT_READ, EV_DELETE, 0, 0, ch);
   }
-  if (ch->GetListenEvents() & ch->kWriteEvent) {
+  if (ch->GetListenEvents() & ch->WRITE_EVENT) {
     EV_SET(&ev[n++], fd, EVFILT_WRITE, EV_DELETE, 0, 0, ch);
   }
   int r = kevent(fd_, ev, n, NULL, 0, NULL);
