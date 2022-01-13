@@ -10,6 +10,8 @@ int main() {
   if (conn->GetState() == Connection::State::Connected) {
     std::cout << "Connected to server!" << std::endl;
   }
+  conn->SetSendBuffer("Hello server!");
+  conn->Write();
 
   delete conn;
   return 0;
