@@ -28,7 +28,7 @@ class ThreadPool {
   DISALLOW_COPY_AND_MOVE(ThreadPool);
 
   template <class F, class... Args>
-  auto Add(F &&f, Args &&... args) -> std::future<typename std::result_of<F(Args...)>::type>;
+  auto Add(F &&f, Args &&...args) -> std::future<typename std::result_of<F(Args...)>::type>;
 
  private:
   std::vector<std::thread> workers_;
@@ -40,7 +40,7 @@ class ThreadPool {
 
 // 不能放在cpp文件，C++编译器不支持模版的分离编译
 template <class F, class... Args>
-auto ThreadPool::Add(F &&f, Args &&... args) -> std::future<typename std::result_of<F(Args...)>::type> {
+auto ThreadPool::Add(F &&f, Args &&...args) -> std::future<typename std::result_of<F(Args...)>::type> {
   using return_type = typename std::result_of<F(Args...)>::type;
 
   auto task =

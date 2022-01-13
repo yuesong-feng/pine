@@ -35,7 +35,7 @@ Poller::~Poller() {
   delete[] events_;
 }
 
-std::vector<Channel *> Poller::Poll(int timeout) {
+std::vector<Vhannel *> Poller::Poll(int timeout) {
   std::vector<Channel *> active_channels;
   int nfds = epoll_wait(fd_, events_, MAX_EVENTS, timeout);
   ErrorIf(nfds == -1, "epoll wait error");
@@ -57,7 +57,7 @@ std::vector<Channel *> Poller::Poll(int timeout) {
 }
 
 void Poller::UpdateChannel(Channel *ch) {
-  int fd = ch->GetSocket()->GetFd();
+  int sockfd = ch->GetSocket()->GetFd();
   struct epoll_event ev {};
   ev.data.ptr = ch;
   if (ch->GetListenEvents() & Channel::READ_EVENT) {
@@ -70,18 +70,19 @@ void Poller::UpdateChannel(Channel *ch) {
     ev.events |= EPOLLET;
   }
   if (!ch->GetExist()) {
-    ErrorIf(epoll_ctl(fd_, EPOLL_CTL_ADD, fd, &ev) == -1, "epoll add error");
+    ErrorIf(epoll_ctl(fd_, EPOLL_CTL_ADD, sockfd, &ev) == -1, "epoll add error");
     ch->SetExist();
   } else {
-    ErrorIf(epoll_ctl(fd_, EPOLL_CTL_MOD, fd, &ev) == -1, "epoll modify error");
+    ErrorIf(epoll_ctl(fd_, EPOLL_CTL_MOD, sockfd, &ev) == -1, "epoll modify error");
   }
 }
 
 void Poller::DeleteChannel(Channel *ch) {
-  int fd = ch->GetSocket()->GetFd();
-  ErrorIf(epoll_ctl(fd_, EPOLL_CTL_DEL, fd, nullptr) == -1, "epoll delete error");
+  int sockfd = ch->GetSocket()->GetFd();
+  ErrorIf(epoll_ctl(fd_, EPOLL_CTL_DEL, sockfd, nullptr) == -1, "epoll delete error");
   ch->SetExist(false);
 }
+
 #endif
 
 #ifdef OS_MACOS
@@ -133,8 +134,8 @@ void Poller::UpdateChannel(Channel *ch) {
   int n = 0;
   int fd = ch->GetSocket()->GetFd();
   int op = EV_ADD;
-  if(ch->GetListenEvents() & ch->ET){
-      op |= EV_CLEAR;
+  if (ch->GetListenEvents() & ch->ET) {
+    op |= EV_CLEAR;
   }
   if (ch->GetListenEvents() & ch->READ_EVENT) {
     EV_SET(&ev[n++], fd, EVFILT_READ, op, 0, 0, ch);

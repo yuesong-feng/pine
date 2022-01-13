@@ -46,4 +46,3 @@ void Acceptor::AcceptConnection() {
 void Acceptor::SetNewConnectionCallback(std::function<void(Socket *)> const &callback) {
   new_connection_callback_ = callback;
 }
-

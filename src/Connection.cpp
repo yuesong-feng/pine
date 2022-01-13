@@ -165,4 +165,3 @@ void Connection::SetOnConnectCallback(std::function<void(Connection *)> const &c
 void Connection::GetlineSendBuffer() { send_buffer_->Getline(); }
 
 Socket *Connection::GetSocket() { return sock_; }
-

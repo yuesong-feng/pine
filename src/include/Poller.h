@@ -9,6 +9,8 @@
  *
  */
 #pragma once
+#include <vector>
+#include "Macros.h"
 
 #define OS_MACOS
 
@@ -19,10 +21,6 @@
 #ifdef OS_MACOS
 #include <sys/event.h>
 #endif
-
-#include "Macros.h"
-
-#include <vector>
 
 class Channel;
 class Poller {
@@ -42,6 +40,7 @@ class Poller {
 #ifdef OS_LINUX
   struct epoll_event *events_{nullptr};
 #endif
+
 #ifdef OS_MACOS
   struct kevent *events_{nullptr};
 #endif
