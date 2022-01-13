@@ -67,4 +67,4 @@ void Server::DeleteConnection(Socket *sock) {
 
 void Server::OnConnect(std::function<void(Connection *)> fn) { on_connect_callback_ = std::move(fn); }
 
-void Server::NewConnect(std::function<void(Connection *)> fn) {new_connect_callback_ = std::move(fn);}
+void Server::NewConnect(std::function<void(Connection *)> fn) { new_connect_callback_ = std::move(fn); }

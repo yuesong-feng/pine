@@ -9,6 +9,9 @@ An echo server:
 int main() {
   EventLoop *loop = new EventLoop();
   Server *server = new Server(loop);
+  server->NewConnect([](Connection *conn) { 
+    std::cout << "New connection fd: " << conn->GetSocket()->GetFd() << std::endl;
+  });
   server->OnConnect([](Connection *conn) {
     conn->Read();
     if (conn->GetState() == Connection::State::Closed) {
