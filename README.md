@@ -55,6 +55,8 @@ int main() {
 ```bash
 mkdir build && cd build
 cmake ..
+# for debug
+cmake -DCMAKE_BUILD_TYPE=DEBUG ..
 make format      # optional
 make cpplint      # optional
 make clang-tidy  # optional
