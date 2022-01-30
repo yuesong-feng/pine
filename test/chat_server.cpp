@@ -37,8 +37,7 @@ int main() {
 void Boardcast(std::map<int, Connection*> &clients){
     for(auto &each : clients){
         Connection* conn = each.second;
-        conn->SetSendBuffer("Hi everyone, a new client arrived!");
-        conn->Write();
+        conn->Send("Hi everyone, a new client arrived!");
     }
 }
 

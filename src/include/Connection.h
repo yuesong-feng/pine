@@ -32,6 +32,7 @@ class Connection {
 
   void Read();
   void Write();
+  void Send(std::string msg);
 
   void SetDeleteConnectionCallback(std::function<void(Socket *)> const &callback);
   void SetOnConnectCallback(std::function<void(Connection *)> const &callback);

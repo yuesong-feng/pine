@@ -145,6 +145,11 @@ void Connection::WriteBlocking() {
   }
 }
 
+void Connection::Send(std::string msg){
+    SetSendBuffer(msg.c_str());
+    Write();
+}
+
 void Connection::Close() { delete_connectioin_callback_(sock_); }
 
 Connection::State Connection::GetState() { return state_; }
