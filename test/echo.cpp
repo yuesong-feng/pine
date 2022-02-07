@@ -1,13 +1,17 @@
-#include "Server.h"
 #include <iostream>
-#include "Buffer.h"
-#include "Connection.h"
-#include "EventLoop.h"
-#include "Socket.h"
+#include "pine.h"
 
 int main() {
   EventLoop *loop = new EventLoop();
   Server *server = new Server(loop);
+
+  Signal::signal(SIGINT, [&] {
+    delete server;
+    delete loop;
+    std::cout << "\nServer exit!" << std::endl;
+    exit(0);
+  });
+  
   server->NewConnect(
       [](Connection *conn) { std::cout << "New connection fd: " << conn->GetSocket()->GetFd() << std::endl; });
 
@@ -23,7 +27,5 @@ int main() {
   });
 
   loop->Loop();
-  delete server;
-  delete loop;
   return 0;
 }
