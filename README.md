@@ -1,6 +1,8 @@
 # pine
 A high-performance and easy-to-use C++ network library. 
 
+### ***After writing C++ for a long time, I gradually got sick of its defects. Finnaly, I decided to give up C++ and embrace C language. Hopefully, I may rewrite this library with C.***
+
 Now this is just a toy library for education purpose, do not use in production.
 
 ## example
