@@ -21,7 +21,7 @@ class Connection {
  public:
   enum State {
     Invalid = 1,
-    Handshaking,
+    Connecting,
     Connected,
     Closed,
     Failed,

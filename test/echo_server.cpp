@@ -22,8 +22,7 @@ int main() {
       return;
     }
     std::cout << "Message from client " << conn->GetSocket()->GetFd() << ": " << conn->ReadBuffer() << std::endl;
-    conn->SetSendBuffer(conn->ReadBuffer());
-    conn->Write();
+    conn->Send(conn->ReadBuffer());
   });
 
   loop->Loop();
