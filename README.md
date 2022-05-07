@@ -1,5 +1,5 @@
 # pine
-A high-performance and easy-to-use C++ network library. 
+A high-performance and easy-to-use C++ network library for study. 
 
 Now this is just a toy library for education purpose, do not use in production.
 
