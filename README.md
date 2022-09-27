@@ -1,10 +1,13 @@
 # pine
-A high-performance and easy-to-use C++ network library for study. 
+
+A high-performance and easy-to-use C++ network library for study.
 
 Now this is just a toy library for education purpose, do not use in production.
 
 ## example
+
 An echo server:
+
 ```cpp
 #include <iostream>
 #include "pine.h"
@@ -19,31 +22,36 @@ int main() {
     std::cout << "\nServer exit!" << std::endl;
     exit(0);
   });
-  
+
   server->NewConnect(
       [](Connection *conn) { std::cout << "New connection fd: " << conn->GetSocket()->GetFd() << std::endl; });
 
-  server->OnConnect([](Connection *conn) {
-    conn->Read();
-    if (conn->GetState() == Connection::State::Closed) {
-      conn->Close();
-      return;
+  server->OnMessage([](Connection *conn) {
+    std::cout << "Message from client " << conn->ReadBuffer() << std::endl;
+    if (conn->GetState() == Connection::State::Connected) {
+      conn->Send(conn->ReadBuffer());
     }
-    std::cout << "Message from client " << conn->GetSocket()->GetFd() << ": " << conn->ReadBuffer() << std::endl;
-    conn->SetSendBuffer(conn->ReadBuffer());
-    conn->Write();
   });
 
   loop->Loop();
   return 0;
 }
+
 ```
+
 An echo client:
+
 ```cpp
+#include <Connection.h>
+#include <Socket.h>
+#include <iostream>
+
 int main() {
   Socket *sock = new Socket();
   sock->Connect("127.0.0.1", 1234);
+
   Connection *conn = new Connection(nullptr, sock);
+
   while (true) {
     conn->GetlineSendBuffer();
     conn->Write();
@@ -54,18 +62,16 @@ int main() {
     conn->Read();
     std::cout << "Message from server: " << conn->ReadBuffer() << std::endl;
   }
+
   delete conn;
   return 0;
 }
 ```
-An muti-user chat room server:
-
-An muti-user chat room client:
 
 An HTTP web server:
 
-
 ## build
+
 ```bash
 mkdir build && cd build
 cmake ..

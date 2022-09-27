@@ -56,9 +56,11 @@ void Server::NewConnection(Socket *sock) {
   Connection *conn = new Connection(sub_reactors_[random], sock);
   std::function<void(Socket *)> cb = std::bind(&Server::DeleteConnection, this, std::placeholders::_1);
   conn->SetDeleteConnectionCallback(cb);
-  conn->SetOnConnectCallback(on_connect_callback_);
+  // conn->SetOnConnectCallback(on_connect_callback_);
+  conn->SetOnMessageCallback(on_message_callback_);
   connections_[sock->GetFd()] = conn;
-  new_connect_callback_(conn);
+  if(new_connect_callback_)
+    new_connect_callback_(conn);
 }
 
 void Server::DeleteConnection(Socket *sock) {
@@ -73,5 +75,7 @@ void Server::DeleteConnection(Socket *sock) {
 }
 
 void Server::OnConnect(std::function<void(Connection *)> fn) { on_connect_callback_ = std::move(fn); }
+
+void Server::OnMessage(std::function<void(Connection *)> fn) { on_message_callback_ = std::move(fn); }
 
 void Server::NewConnect(std::function<void(Connection *)> fn) { new_connect_callback_ = std::move(fn); }
