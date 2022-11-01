@@ -70,18 +70,32 @@ int main() {
 
 An HTTP web server:
 
-## build
-
+## build & run
+build the pine library
 ```bash
 mkdir build && cd build
-cmake ..
-# for debug
-cmake -DCMAKE_BUILD_TYPE=DEBUG ..
+cmake .. # for debug, add -DCMAKE_BUILD_TYPE=DEBUG
+
 make format      # optional
 make cpplint      # optional
 make clang-tidy  # optional
 make
-# write your program in "test/" directory, eg. server.cpp
+```
+
+build tests files, at `pine/build`
+```bash
+make build-tests
+```
+
+Need to run your own tests? Write your program in "test/" directory, eg. server.cpp
+```bash
+# at pine/build
 make server
 ./bin/server
+```
+
+run the echo server
+```bash
+./bin/echo_server &
+./bin/echo_client
 ```
