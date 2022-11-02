@@ -5,6 +5,8 @@
 #include <arpa/inet.h>
 #include <cstring>
 #include <cassert>
+#include <fcntl.h>
+#include <sys/ioctl.h>
 
 Socket::Socket() : fd_(-1) {}
 
@@ -18,6 +20,38 @@ Socket::~Socket() {
 void Socket::set_fd(int fd) { fd_ = fd; }
 
 int Socket::fd() { return fd_; }
+
+std::string Socket::get_ip() {
+    struct sockaddr_in addr;
+    socklen_t len = sizeof(addr);
+    assert( getpeername(fd_, (struct sockaddr *)&addr, &len) != -1);
+    return std::string(inet_ntoa(addr.sin_addr));
+}
+
+unsigned short Socket::get_port() {
+    struct sockaddr_in addr;
+    socklen_t len = sizeof(addr);
+    assert( getpeername(fd_, (struct sockaddr *)&addr, &len) != -1);
+    return ntohs(addr.sin_port);
+}
+
+RC Socket::SetNonBlocking() { 
+    if (fcntl(fd_, F_SETFL, fcntl(fd_, F_GETFL) | O_NONBLOCK) == -1) {
+        perror("Socket set non-blocking failed");
+        return RC_SOCKET_ERROR;
+    }
+    return RC_SUCCESS;
+}
+
+bool Socket::IsNonBlocking() { return (fcntl(fd_, F_GETFL) & O_NONBLOCK) != 0; }
+
+int Socket::RecvBufSize() {
+    int size = -1;
+    if (ioctl(fd_, FIONREAD, &size) == -1) {
+        perror("Socket get recv buf size failed");
+    }
+    return size;
+}
 
 RC Socket::Create() {
     assert(fd_ == -1);
@@ -52,14 +86,13 @@ RC Socket::Listen() {
     return RC_SUCCESS;
 }
 
-RC Socket::Accept(Socket *clnt_sock) {
+RC Socket::Accept(int &clnt_fd) {
     assert(fd_ != -1);
-    int clnt_fd = ::accept(fd_, NULL, NULL);
+    clnt_fd = ::accept(fd_, NULL, NULL);
     if(clnt_fd == -1) {
         perror("Failed to accept socket");
         return RC_SOCKET_ERROR;
     }
-    clnt_sock->set_fd(clnt_fd);
     return RC_SUCCESS;
 }
 

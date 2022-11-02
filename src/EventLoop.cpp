@@ -8,10 +8,19 @@ EventLoop::EventLoop() {
 EventLoop::~EventLoop() {}
 
 void EventLoop::Loop() {
-    while (true) {
-        std::vector<Channel *> chs = poller_->Poll();
-        for (Channel *ch : chs) {
-            ch->handleEvent();
+    std::vector<Channel *> active_channels;
+    while (poller_->Poll(active_channels) == RC_SUCCESS) {
+        for (Channel *ch : active_channels) {
+            ch->HandleEvent();
         }
     }
 }
+
+RC EventLoop::UpdateChannel(Channel *channel) {
+    return poller_->UpdateChannel(channel);
+}
+
+RC EventLoop::DeleteChannel(Channel *channel) {
+    return poller_->DeleteChannel(channel);
+}
+
