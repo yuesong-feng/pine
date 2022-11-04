@@ -17,7 +17,7 @@
 class TcpServer {
  public:
   DISALLOW_COPY_AND_MOVE(TcpServer);
-  explicit TcpServer();
+  TcpServer();
   ~TcpServer();
   void Start();
 
