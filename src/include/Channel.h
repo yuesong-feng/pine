@@ -9,44 +9,41 @@
  *
  */
 #pragma once
-#include "Macros.h"
-
 #include <functional>
+#include "common.h"
 
-class Socket;
-class EventLoop;
 class Channel {
  public:
-  Channel(EventLoop *loop, Socket *socket);
+  DISALLOW_COPY_AND_MOVE(Channel);
+  Channel(int fd, EventLoop *loop);
   ~Channel();
 
-  DISALLOW_COPY_AND_MOVE(Channel);
 
-  void HandleEvent();
+  void HandleEvent() const;
   void EnableRead();
   void EnableWrite();
 
-  Socket *GetSocket();
-  int GetListenEvents();
-  int GetReadyEvents();
-  bool GetExist();
-  void SetExist(bool in = true);
-  void UseET();
+  int fd() const;
+  short listen_events() const;
+  short ready_events() const;
+  bool exist() const;
+  void set_exist(bool in = true);
+  void EnableET();
 
-  void SetReadyEvents(int ev);
-  void SetReadCallback(std::function<void()> const &callback);
-  void SetWriteCallback(std::function<void()> const &callback);
+  void set_ready_event(short ev);
+  void set_read_callback(std::function<void()> const &callback);
+  void set_write_callback(std::function<void()> const &callback);
 
-  static const int READ_EVENT;   // NOLINT
-  static const int WRITE_EVENT;  // NOLINT
-  static const int ET;           // NOLINT
+  static const short READ_EVENT;
+  static const short WRITE_EVENT;
+  static const short ET;
 
  private:
+  int fd_;
   EventLoop *loop_;
-  Socket *socket_;
-  int listen_events_{0};
-  int ready_events_{0};
-  bool exist_{false};
+  short listen_events_;
+  short ready_events_;
+  bool exist_;
   std::function<void()> read_callback_;
   std::function<void()> write_callback_;
 };

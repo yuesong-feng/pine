@@ -13,59 +13,59 @@ An echo server:
 #include "pine.h"
 
 int main() {
-  EventLoop *loop = new EventLoop();
-  Server *server = new Server(loop);
+  TcpServer *server = new TcpServer();
 
   Signal::signal(SIGINT, [&] {
     delete server;
-    delete loop;
     std::cout << "\nServer exit!" << std::endl;
     exit(0);
   });
 
-  server->NewConnect(
-      [](Connection *conn) { std::cout << "New connection fd: " << conn->GetSocket()->GetFd() << std::endl; });
+  server->onConnect([](Connection *conn) { std::cout << "New connection fd: " << conn->socket()->fd() << std::endl; });
 
-  server->OnMessage([](Connection *conn) {
-    std::cout << "Message from client " << conn->ReadBuffer() << std::endl;
-    if (conn->GetState() == Connection::State::Connected) {
-      conn->Send(conn->ReadBuffer());
-    }
+  server->onRecv([](Connection *conn) {
+    std::cout << "Message from client " << conn->read_buf()->c_str() << std::endl;
+    conn->Send(conn->read_buf()->c_str());
   });
 
-  loop->Loop();
+  server->Start();
+
+  delete server;
   return 0;
 }
-
 ```
 
 An echo client:
 
 ```cpp
-#include <Connection.h>
-#include <Socket.h>
+#include "pine.h"
 #include <iostream>
 
 int main() {
   Socket *sock = new Socket();
+  sock->Create();
   sock->Connect("127.0.0.1", 1234);
 
-  Connection *conn = new Connection(nullptr, sock);
+  Connection *conn = new Connection(sock->fd(), nullptr);
 
   while (true) {
-    conn->GetlineSendBuffer();
+    std::string input;
+    std::getline(std::cin, input);
+    conn->set_send_buf(input.c_str());
     conn->Write();
-    if (conn->GetState() == Connection::State::Closed) {
+    if (conn->state() == Connection::State::Closed) {
       conn->Close();
       break;
     }
     conn->Read();
-    std::cout << "Message from server: " << conn->ReadBuffer() << std::endl;
+    std::cout << "Message from server: " << conn->read_buf()->c_str() << std::endl;
   }
 
   delete conn;
+  delete sock;
   return 0;
 }
+
 ```
 
 An HTTP web server:

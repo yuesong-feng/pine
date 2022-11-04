@@ -9,8 +9,8 @@
  *
  */
 #pragma once
+#include "common.h"
 #include <vector>
-#include "Macros.h"
 
 #ifdef OS_LINUX
 #include <sys/epoll.h>
@@ -20,26 +20,25 @@
 #include <sys/event.h>
 #endif
 
-class Channel;
 class Poller {
  public:
+  DISALLOW_COPY_AND_MOVE(Poller);
   Poller();
   ~Poller();
 
-  DISALLOW_COPY_AND_MOVE(Poller);
+  RC UpdateChannel(Channel *ch) const;
+  RC DeleteChannel(Channel *ch) const;
 
-  void UpdateChannel(Channel *ch);
-  void DeleteChannel(Channel *ch);
-
-  std::vector<Channel *> Poll(int timeout = -1);
+  std::vector<Channel *> Poll(long timeout = -1) const;
 
  private:
-  int fd_{1};
+  int fd_;
+
 #ifdef OS_LINUX
   struct epoll_event *events_{nullptr};
 #endif
 
 #ifdef OS_MACOS
-  struct kevent *events_{nullptr};
+  struct kevent *events_;
 #endif
 };

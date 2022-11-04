@@ -9,22 +9,23 @@
  *
  */
 #pragma once
+#include <memory>
 #include <string>
-#include "Macros.h"
+#include "common.h"
 
 class Buffer {
  public:
+  DISALLOW_COPY_AND_MOVE(Buffer);
   Buffer() = default;
   ~Buffer() = default;
 
-  DISALLOW_COPY_AND_MOVE(Buffer);
+  const std::string &buf() const;
+  const char* c_str() const;
+  void set_buf(const char *buf);
 
+  size_t Size() const;
   void Append(const char *_str, int _size);
-  ssize_t Size();
-  const char *ToStr();
   void Clear();
-  void Getline();
-  void SetBuf(const char *buf);
 
  private:
   std::string buf_;

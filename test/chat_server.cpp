@@ -2,7 +2,7 @@
 #include <map>
 #include "Connection.h"
 #include "EventLoop.h"
-#include "Server.h"
+#include "TcpServer.h"
 #include "Socket.h"
 
 int main() {
@@ -13,7 +13,7 @@ int main() {
 
   server->NewConnect(
       [&](Connection *conn) {
-      int clnt_fd = conn->GetSocket()->GetFd();
+      int clnt_fd = conn->GetSocket()->fd();
       std::cout << "New connection fd: " << clnt_fd << std::endl;
       clients[clnt_fd] = conn;
         for(auto &each : clients){

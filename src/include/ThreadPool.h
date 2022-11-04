@@ -18,17 +18,16 @@
 #include <thread>  // NOLINT
 #include <utility>
 #include <vector>
-#include "Macros.h"
+#include "common.h"
 
 class ThreadPool {
  public:
+  DISALLOW_COPY_AND_MOVE(ThreadPool);
   explicit ThreadPool(unsigned int size = std::thread::hardware_concurrency());
   ~ThreadPool();
 
-  DISALLOW_COPY_AND_MOVE(ThreadPool);
-
   template <class F, class... Args>
-  auto Add(F &&f, Args &&...args) -> std::future<typename std::result_of<F(Args...)>::type>;
+  auto Add(F &&f, Args &&...args) -> std::future<typename std::invoke_result<F, Args...>::type>;
 
  private:
   std::vector<std::thread> workers_;
@@ -40,8 +39,8 @@ class ThreadPool {
 
 // 不能放在cpp文件，C++编译器不支持模版的分离编译
 template <class F, class... Args>
-auto ThreadPool::Add(F &&f, Args &&...args) -> std::future<typename std::result_of<F(Args...)>::type> {
-  using return_type = typename std::result_of<F(Args...)>::type;
+auto ThreadPool::Add(F &&f, Args &&...args) -> std::future<typename std::invoke_result<F, Args...>::type> {
+  using return_type = typename std::invoke_result<F, Args...>::type;
 
   auto task =
       std::make_shared<std::packaged_task<return_type()>>(std::bind(std::forward<F>(f), std::forward<Args>(args)...));
