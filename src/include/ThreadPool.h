@@ -32,8 +32,8 @@ class ThreadPool {
  private:
   std::vector<std::thread> workers_;
   std::queue<std::function<void()>> tasks_;
-  std::mutex queue_mutex_;
-  std::condition_variable condition_variable_;
+  std::mutex queue_mtx_;
+  std::condition_variable queue_cv_;
   std::atomic<bool> stop_{false};
 };
 
@@ -47,15 +47,15 @@ auto ThreadPool::Add(F &&f, Args &&...args) -> std::future<typename std::invoke_
 
   std::future<return_type> res = task->get_future();
   {
-    std::unique_lock<std::mutex> lock(queue_mutex_);
+    std::unique_lock<std::mutex> lock(queue_mtx_);
 
     // don't allow enqueueing after stopping the pool
     if (stop_) {
       throw std::runtime_error("enqueue on stopped ThreadPool");
     }
 
-    workers_.emplace_back([task]() { (*task)(); });
+    tasks_.emplace([task](){ (*task)(); });
   }
-  condition_variable_.notify_one();
+  queue_cv_.notify_one();
   return res;
 }

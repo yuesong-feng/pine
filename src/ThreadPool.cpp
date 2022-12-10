@@ -12,30 +12,30 @@
 
 ThreadPool::ThreadPool(unsigned int size) {
   for (unsigned int i = 0; i < size; ++i) {
-    workers_.emplace_back(std::thread([this]() {
+    workers_.emplace_back([this]() {
       while (true) {
         std::function<void()> task;
         {
-          std::unique_lock<std::mutex> lock(queue_mutex_);
-          condition_variable_.wait(lock, [this]() { return stop_ || !tasks_.empty(); });
+          std::unique_lock<std::mutex> lock(queue_mtx_);
+          queue_cv_.wait(lock, [this]() { return stop_ || !tasks_.empty(); });
           if (stop_ && tasks_.empty()) {
             return;
           }
-          task = tasks_.front();
+          task = std::move(tasks_.front());
           tasks_.pop();
         }
         task();
       }
-    }));
+    });
   }
 }
 
 ThreadPool::~ThreadPool() {
   {
-    std::unique_lock<std::mutex> lock(queue_mutex_);
+    std::unique_lock<std::mutex> lock(queue_mtx_);
     stop_ = true;
   }
-  condition_variable_.notify_all();
+  queue_cv_.notify_all();
   for (std::thread &th : workers_) {
     if (th.joinable()) {
       th.join();
