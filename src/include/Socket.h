@@ -26,10 +26,12 @@ class Socket {
   RC Listen() const;
   RC Accept(int &clnt_fd) const;
   RC Connect(const char *ip, uint16_t port) const;
-  RC SetNonBlocking() const;
-  bool IsNonBlocking() const;
+  RC SetNonBlock() const;
+  RC SetBlock() const;
+  bool IsNonBlock() const;
   size_t RecvBufSize() const;
 
  private:
+  RC SetBlockInternal(bool non_block) const;
   int fd_;
 };

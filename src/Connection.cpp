@@ -37,7 +37,7 @@ RC Connection::Read() {
   }
   assert(state_ == State::Connected && "connection state is disconnected!");
   read_buf_->Clear();
-  if (socket_->IsNonBlocking()) {
+  if (socket_->IsNonBlock()) {
     return ReadNonBlocking();
   } else {
     return ReadBlocking();
@@ -49,7 +49,7 @@ RC Connection::Write() {
     return RC_CONNECTION_ERROR;
   }
   RC rc = RC_UNDEFINED;
-  if (socket_->IsNonBlocking()) {
+  if (socket_->IsNonBlock()) {
     rc = WriteNonBlocking();
   } else {
     rc = WriteBlocking();

@@ -41,15 +41,35 @@ std::string Socket::get_addr() const {
   return ret;
 }
 
-RC Socket::SetNonBlocking() const {
-  if (fcntl(fd_, F_SETFL, fcntl(fd_, F_GETFL) | O_NONBLOCK) == -1) {
-    perror("Socket set non-blocking failed");
+RC Socket::SetNonBlock() const {
+  return SetBlockInternal(true);
+}
+RC Socket::SetBlock() const{
+  return SetBlockInternal(false);
+}
+
+RC Socket::SetBlockInternal(bool non_block) const {
+  int flags;
+  if ((flags = fcntl(fd_, F_GETFL)) == -1) {
+    perror("Socket fcntl(F_GETFL) error");
     return RC_SOCKET_ERROR;
   }
+  if (!!(flags & O_NONBLOCK) == !!non_block)
+    return RC_SUCCESS;
+  if (non_block) 
+    flags |= O_NONBLOCK;
+  else
+    flags &= ~O_NONBLOCK;
+  
+  if (fcntl(fd_, F_SETFL, flags) == -1) {
+    perror("Socket fcntl(F_SETFL) error");
+    return RC_SOCKET_ERROR;
+  }
+
   return RC_SUCCESS;
 }
 
-bool Socket::IsNonBlocking() const { return (fcntl(fd_, F_GETFL) & O_NONBLOCK) != 0; }
+bool Socket::IsNonBlock() const { return (fcntl(fd_, F_GETFL) & O_NONBLOCK) != 0; }
 
 size_t Socket::RecvBufSize() const {
   size_t size = -1;
@@ -58,6 +78,8 @@ size_t Socket::RecvBufSize() const {
   }
   return size;
 }
+
+
 
 RC Socket::Create() {
   assert(fd_ == -1);
