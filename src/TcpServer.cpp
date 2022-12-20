@@ -13,6 +13,7 @@
 #include "Acceptor.h"
 #include "ThreadPool.h"
 #include "Connection.h"
+#include "Log.h"
 
 TcpServer::TcpServer() {
   main_reactor_ = std::make_unique<EventLoop>();
@@ -27,6 +28,8 @@ TcpServer::TcpServer() {
     std::unique_ptr<EventLoop> sub_reactor = std::make_unique<EventLoop>();
     sub_reactors_.push_back(std::move(sub_reactor));
   }
+
+  LOG_LEVEL(LOG_DEBUG);
 }
 
 TcpServer::~TcpServer() {}
@@ -37,6 +40,7 @@ void TcpServer::Start() {
     thread_pool_->Add(std::move(sub_loop));
   }
   main_reactor_->Loop();
+  LOG_INFO("start server success!");
 }
 
 RC TcpServer::NewConnection(int fd) {
@@ -53,6 +57,7 @@ RC TcpServer::NewConnection(int fd) {
   if (on_connect_) {
     on_connect_(connections_[fd].get());
   }
+  LOG_INFO("new connection fd: %d", fd);
   return RC_SUCCESS;
 }
 
